@@ -280,14 +280,97 @@ You can customize the Syncpack config to match your monorepo's specific needs.
 
 ---
 
-### Version Requirements for CI/CD
+### Dependency Consistency & Pre-Push Workflow
+
+This section is an educational template demonstrating the recommended steps to maintain code quality, type safety, and dependency consistency in a monorepo. All commands and configurations are examples and use `<YOUR-VALUE-HERE>` placeholders where applicable.
+
+#### Educational Commands Reference
+
+| Command | Purpose |
+|---------|---------|
+| `pnpm lint` | Run ESLint on all packages to detect code style and errors |
+| `pnpm typecheck` | Run TypeScript type checking across all packages |
+| `pnpm build` | Build all packages using Turbo pipelines |
+| `pnpm test` | Run unit tests (Vitest) after building |
+| `pnpm sync:lint` | Check for mismatched dependency versions using Syncpack |
+| `pnpm sync:fix` | Auto-fix dependency version mismatches |
+| `pnpm sync:list` | List all dependency versions across the monorepo |
+
+#### Recommended Workflow Before Pushing
+
+Follow these steps before pushing code to ensure quality and consistency:
+
+**1. Run linting:**
+
+```bash
+pnpm lint
+```
+
+**2. Run type checking:**
+
+```bash
+pnpm typecheck
+```
+
+**3. Build all packages:**
+
+```bash
+pnpm build
+```
+
+**4. Run all tests:**
+
+```bash
+pnpm test
+```
+
+**5. Check dependency consistency:**
+
+```bash
+pnpm sync:lint
+pnpm sync:fix   # optional, fix auto-fixable mismatches
+pnpm sync:list  # verify versions across packages
+```
+
+> **Note:** These steps are educational. Replace `<YOUR-VALUE-HERE>` placeholders with real values and ensure all pipelines are tested in a safe environment before applying to production.
+
+#### Why This Workflow Matters
+
+Following this workflow ensures:
+
+- **Code style consistency** (`lint`) - Catches formatting issues and common errors
+- **Type safety** (`typecheck`) - Verifies TypeScript types across all packages
+- **Successful builds** (`build`) - Confirms all packages compile correctly
+- **Verified functionality** (`test`) - Ensures tests pass before pushing
+- **Aligned dependency versions** (`syncpack`) - Prevents version conflicts in the monorepo
+
+---
+
+### Version Requirements
 
 | Tool | Minimum Version |
 |------|-----------------|
 | Node.js | 20.x |
 | pnpm | 8.x |
+| Turbo | 2.x |
+| TypeScript | 5.x |
+| Vitest | 1.x |
+| Syncpack | 13.x |
+| ESLint | 8.x |
+| Prettier | 3.x |
 | Firebase CLI | 13.x |
 | gcloud CLI | Latest |
+
+---
+
+### Further Reading
+
+Continue learning about CI/CD and deployment:
+
+1. [CI-CD-Pipeline-Guide.md](docs/ci-cd/CI-CD-Pipeline-Guide.md) - Concepts and overview
+2. [CI.md](docs/ci-cd/CI.md) - Continuous Integration workflow
+3. [Deploy-Dev.md](docs/ci-cd/Deploy-Dev.md) - Deployment workflow
+4. [setup-wif.sh](scripts/setup-wif.sh) - Workload Identity Federation setup
 
 ---
 

@@ -1,0 +1,22 @@
+{
+  "name": "@repo/shared",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schemas": "./src/schemas/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@repo/config": "workspace:*",
+    "typescript": "5.5.4",
+    "vitest": "^2.1.8"
+  }
+}
+

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add:*)",
+      "Bash(npm --version:*)",
+      "Bash(npm install:*)",
+      "Bash(echo:*)",
+      "Bash(node -e \"const { execSync } = require\\(''child_process''\\); try { execSync\\(''corepack enable''\\); console.log\\(''corepack enabled''\\); } catch\\(e\\) { console.error\\(e.message\\); }\")",
+      "Bash(corepack enable:*)",
+      "Bash(corepack prepare:*)",
+      "Bash(pnpm --filter web typecheck:*)",
+      "Bash(node_modules/.bin/tsc:*)",
+      "Bash(node_modules/.bin/vite build)",
+      "Bash(timeout 15 node_modules/.bin/vite:*)",
+      "Bash(pnpm update:*)",
+      "Bash(ls:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

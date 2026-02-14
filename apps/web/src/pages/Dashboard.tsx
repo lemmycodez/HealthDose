@@ -75,7 +75,7 @@ function truncate(str: string, max = 45) {
 }
 
 const NO_API_KEY_MSG =
-  'HealthDose AI needs an Anthropic API key to function.\n\nCreate a file called .env.local in apps/web and add:\n\n  VITE_ANTHROPIC_API_KEY=your_api_key_here\n\nThen restart the dev server. Get your key at console.anthropic.com'
+  'HealthDose AI needs a Gemini API key to function.\n\nCreate a file called .env.local in apps/web and add:\n\n  VITE_GEMINI_API_KEY=your_api_key_here\n\nThen restart the dev server. Get your free key at aistudio.google.com'
 
 const SUGGESTED = [
   'What are the main side effects of Metformin?',
@@ -692,7 +692,7 @@ export function Dashboard() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const apiKey = (import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined) ?? ''
+  const apiKey = (import.meta.env.VITE_GEMINI_API_KEY as string | undefined) ?? ''
 
   /* Derived */
   const activeSession = sessions.find(s => s.id === activeId) ?? null

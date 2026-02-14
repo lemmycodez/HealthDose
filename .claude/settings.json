@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push:*)",
+      "Bash(for branch in Phase2implementation phase2-complete stage-branch monday-demo tuesday-demo)",
+      "Bash(do echo \"=== $branch ===\")",
+      "Bash(done)",
+      "Bash(git merge:*)",
+      "Bash(pnpm install:*)",
+      "Bash(node -e:*)",
+      "Bash(pnpm --filter web dev:*)"
+    ]
+  }
+}

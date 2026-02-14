@@ -3,60 +3,69 @@
 @tailwind utilities;
 
 /* =============================================================================
-   Shadcn UI Theme Variables
-   =============================================================================
-   🎨 ANALOGY: These CSS variables are like the "color palette" for a painter.
-   Instead of hardcoding colors everywhere, we define them once here,
-   and all Shadcn components automatically use these colors!
-   
-   This makes it easy to change the entire look of your app by just
-   updating these values - like changing the mood lighting in a theater!
+   Ember Green Theme — HealthDose
+   Primary palette: Emerald / Forest Green with warm amber undertones
    ============================================================================= */
 
 @layer base {
   :root {
+    /* Ember Green Light Theme */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 163 94% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 163 94% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 163 94% 10%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 152 60% 92%;
+    --secondary-foreground: 163 94% 20%;
+    --muted: 152 40% 95%;
+    --muted-foreground: 152 20% 45%;
+    --accent: 158 64% 88%;
+    --accent-foreground: 163 94% 20%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --destructive-foreground: 0 0% 100%;
+    --border: 152 30% 88%;
+    --input: 152 30% 88%;
+    --ring: 160 84% 39%;
+    --radius: 0.75rem;
+
+    /* Ember Green custom palette */
+    --eg-50:  152 80% 96%;
+    --eg-100: 149 80% 90%;
+    --eg-200: 152 70% 82%;
+    --eg-300: 156 65% 68%;
+    --eg-400: 158 64% 52%;
+    --eg-500: 160 84% 39%;
+    --eg-600: 161 94% 30%;
+    --eg-700: 163 94% 24%;
+    --eg-800: 163 88% 18%;
+    --eg-900: 164 86% 14%;
+    --eg-950: 166 91% 9%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Ember Green Dark Theme */
+    --background: 166 91% 9%;
+    --foreground: 152 80% 95%;
+    --card: 163 80% 12%;
+    --card-foreground: 152 80% 95%;
+    --popover: 163 80% 12%;
+    --popover-foreground: 152 80% 95%;
+    --primary: 158 64% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 163 60% 16%;
+    --secondary-foreground: 152 80% 90%;
+    --muted: 163 55% 14%;
+    --muted-foreground: 152 30% 60%;
+    --accent: 163 50% 20%;
+    --accent-foreground: 152 80% 90%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --destructive-foreground: 152 80% 95%;
+    --border: 163 45% 18%;
+    --input: 163 45% 18%;
+    --ring: 158 64% 48%;
   }
 }
 
@@ -75,29 +84,13 @@
 }
 
 /* =============================================================================
-   Custom Styles
+   Global
    ============================================================================= */
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-}
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.logo {
-  height: 5em;
-  padding: 1em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em hsl(var(--primary) / 0.5));
 }
 
 a {
@@ -108,3 +101,86 @@ a {
 a:hover {
   text-decoration: underline;
 }
+
+/* =============================================================================
+   Dashboard Chat Styles
+   ============================================================================= */
+
+.chat-bg {
+  background-color: hsl(var(--eg-950));
+  background-image:
+    radial-gradient(circle at 20% 80%, hsl(160 84% 39% / 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, hsl(152 60% 30% / 0.06) 0%, transparent 50%);
+}
+
+.sidebar-bg {
+  background-color: hsl(var(--eg-900));
+}
+
+.message-bubble-in {
+  background-color: hsl(var(--eg-800));
+  color: hsl(var(--eg-100));
+  border-radius: 0 1rem 1rem 1rem;
+}
+
+.message-bubble-out {
+  background-color: hsl(var(--eg-600));
+  color: #fff;
+  border-radius: 1rem 0 1rem 1rem;
+}
+
+/* Scrollbar styling */
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 2px;
+}
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Avatar gradient */
+.avatar-gradient {
+  background: linear-gradient(135deg, hsl(var(--eg-500)), hsl(var(--eg-700)));
+}
+
+/* Green glow effect for logo */
+.logo-glow {
+  filter: drop-shadow(0 0 20px hsl(160 84% 39% / 0.5));
+}
+
+/* Pulse animation for online indicator */
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.pulse-green {
+  animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Floating animation for landing hero */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+.float-anim {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Fade in up */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+  animation: fade-in-up 0.6s ease forwards;
+}
+.fade-in-up-delay-1 { animation-delay: 0.1s; opacity: 0; }
+.fade-in-up-delay-2 { animation-delay: 0.2s; opacity: 0; }
+.fade-in-up-delay-3 { animation-delay: 0.3s; opacity: 0; }
+.fade-in-up-delay-4 { animation-delay: 0.4s; opacity: 0; }

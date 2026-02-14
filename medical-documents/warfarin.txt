@@ -1,0 +1,121 @@
+WARFARIN - Complete Medication Guide
+
+GENERIC NAME: Warfarin
+BRAND NAMES: Coumadin, Jantoven
+
+DRUG CLASS: Anticoagulant (Vitamin K Antagonist)
+
+MECHANISM OF ACTION:
+Warfarin inhibits the enzyme vitamin K epoxide reductase. This enzyme is responsible for recycling vitamin K, which is essential for the synthesis of clotting factors II, VII, IX, and X in the liver. By blocking this enzyme, warfarin reduces the production of these clotting factors, leading to a decreased ability for blood to clot. The full anticoagulant effect takes 3-5 days because existing clotting factors must naturally degrade.
+
+INDICATIONS AND USAGE:
+- Prophylaxis and treatment of venous thrombosis (deep vein thrombosis, DVT)
+- Prophylaxis and treatment of pulmonary embolism (PE)
+- Prevention of thromboembolic events in atrial fibrillation
+- Prevention of thromboembolic events after heart valve replacement
+- Reduction of risk of recurrent myocardial infarction
+- Prevention of stroke in patients with mechanical heart valves
+
+DOSAGE GUIDELINES:
+- Initial dose: 2-5 mg daily (based on patient factors)
+- Maintenance dose: 2-10 mg daily (individualized based on INR)
+- Dose adjustments based on International Normalized Ratio (INR)
+- Target INR depends on indication:
+  * Most indications: 2.0-3.0
+  * Mechanical heart valves: 2.5-3.5
+- Take at same time each day (usually evening)
+
+CONTRAINDICATIONS:
+- Active bleeding or hemorrhagic tendencies
+- Pregnancy (warfarin embryopathy, especially first trimester)
+- Recent or upcoming surgery (including dental surgery)
+- Severe uncontrolled hypertension
+- Pericarditis or pericardial effusion
+- Lumbar puncture or regional anesthesia
+- Inability to comply with monitoring requirements
+
+WARNINGS AND PRECAUTIONS:
+- Bleeding risk: Most serious adverse effect
+- Monitoring: Regular INR testing required (initially weekly, then monthly)
+- Dietary consistency: Vitamin K intake should be consistent
+- Drug interactions: Hundreds of drugs interact with warfarin
+- Genetic factors: CYP2C9 and VKORC1 variants affect metabolism
+- "Warfarin necrosis": Rare skin necrosis complication
+
+COMMON SIDE EFFECTS:
+- Bleeding (epistaxis, gum bleeding, easy bruising)
+- Purplish toes (cholesterol microembolization)
+- Hair loss (reversible)
+- Skin rash
+- Nausea and vomiting
+- Abdominal pain
+
+SERIOUS SIDE EFFECTS (seek immediate medical attention):
+- Severe bleeding (internal, intracranial)
+- Signs of bleeding: black stools, blood in urine, coffee-ground vomit
+- Sudden severe headache (possible intracranial bleed)
+- Unexplained bruising or swelling
+- Warfarin-induced skin necrosis
+- Purple toe syndrome
+
+DRUG INTERACTIONS (SIGNIFICANT):
+SEVERE INTERACTIONS:
+1. Ibuprofen and other NSAIDs: Increased bleeding risk
+2. Aspirin: Significantly increased bleeding risk
+3. Amiodarone: Increased warfarin effect (monitor INR closely)
+4. Fluconazole (antifungals): Increased warfarin effect
+5. Metronidazole: Increased warfarin effect
+6. Trimethoprim-sulfamethoxazole: Increased warfarin effect
+
+MODERATE INTERACTIONS:
+1. Acetaminophen (high doses, regular use): Increased INR
+2. Amoxicillin: Increased warfarin effect (disrupts gut flora)
+3. Ciprofloxacin: Increased warfarin effect
+4. Omeprazole: Possible increased warfarin effect
+5. Simvastatin: Possible increased warfarin effect
+6. Phenytoin: Complex bidirectional interaction
+7. Alcohol (chronic heavy use): Variable effects
+
+INTERACTIONS THAT DECREASE WARFARIN EFFECT:
+1. Vitamin K (dietary supplements)
+2. Rifampin
+3. Barbiturates
+4. Carbamazepine
+5. Cholestyramine
+6. Oral contraceptives
+
+DIETARY CONSIDERATIONS:
+- Consistent vitamin K intake is crucial
+- Vitamin K rich foods: leafy greens (kale, spinach, broccoli, Brussels sprouts)
+- Do not eliminate these foods, but keep intake consistent
+- Avoid cranberry juice (may increase warfarin effect)
+- Avoid alcohol (especially binge drinking)
+- Avoid herbal supplements: St. John's wort, ginseng, ginkgo, coenzyme Q10
+
+PHARMACOKINETICS:
+- Absorption: Rapid and complete oral absorption
+- Bioavailability: >95%
+- Protein binding: 99% bound to albumin
+- Metabolism: Hepatic via CYP2C9
+- Half-life: 20-60 hours (average 40 hours)
+- Onset of action: 24-72 hours
+- Duration of action: 2-5 days
+- Monitoring: INR (International Normalized Ratio)
+
+LABORATORY MONITORING:
+- INR target: Individualized (typically 2-3)
+- Frequency: Initially daily to weekly, then every 4 weeks when stable
+- Check INR before any surgical procedure
+- Pregnancy: Warfarin contraindicated (heparin used instead)
+
+PATIENT EDUCATION POINTS:
+- Take exactly as prescribed at same time daily
+- Missed dose: Take if remembered same day, otherwise skip
+- Never double up doses
+- Report any unusual bleeding or bruising
+- Use soft toothbrush and electric razor
+- Avoid contact sports
+- Carry medical alert identification
+- Inform all healthcare providers of warfarin use
+- Keep all appointments for INR testing
+- Do not start or stop any medication without consulting prescriber

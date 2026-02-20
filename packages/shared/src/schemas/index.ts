@@ -1,2 +1,8 @@
 export { UserSchema, CreateUserSchema } from './user'
 export type { User, CreateUser } from './user'
+export { MedicationSchema } from './medication'
+export type { Medication } from './medication'
+export { InteractionSchema } from './interaction'
+export type { Interaction } from './interaction'
+export { AdviceSchema } from './advice'
+export type { Advice } from './advice'

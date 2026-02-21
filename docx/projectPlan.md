@@ -12,8 +12,8 @@ Phase 1: Project Setup & Foundation
 Milestone 1
 • User authentication working, architecture finalized, base UI ready.  
 Phase 2: Core Database & API Implementation
-• Design Firestore schema (Users, Medications, Interactions, Advice). #Martha
-• Populate medication database. #Lemmy
+<!-- • Design Firestore schema (Users, Medications, Interactions, Advice). #Martha -->
+<!-- • Populate medication database. #Lemmy -->
 
 <!-- • Implement tRPC API layer.  -->
 

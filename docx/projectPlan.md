@@ -12,12 +12,15 @@ Phase 1: Project Setup & Foundation
 Milestone 1
 • User authentication working, architecture finalized, base UI ready.  
 Phase 2: Core Database & API Implementation
+
 <!-- • Design Firestore schema (Users, Medications, Interactions, Advice). #Martha -->
+
 • Populate medication database. #Lemmy
 
 <!-- • Implement tRPC API layer.  -->
 
 <!-- • Create medication search functionality. #Martha -->
+
 • Build drug interaction checker.#Lemmy
 
 <!-- • Add role-based access control (RBAC). -->
@@ -25,7 +28,9 @@ Phase 2: Core Database & API Implementation
 Milestone 2
 • Medication search and interaction checker functional with role restrictions.
 Phase 3: RAG Engine Integration
+
 <!-- • Set up Vertex AI embedding pipeline. -->
+
 • Chunk and embed authoritative medical documents.
 • Configure Vector Database.
 • Integrate Gemini API for grounded generation.
@@ -50,5 +55,3 @@ Phase 5: Testing & Optimization (Weeks 9–10)
 • Final production deployment.
 Milestone 5
 • Production-ready HealthDose platform deployed with full testing coverage.
-
-

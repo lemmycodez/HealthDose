@@ -1,32 +1,210 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
+import cors from 'cors';
 
-import {setGlobalOptions} from "firebase-functions";
-import {onRequest} from "firebase-functions/https";
-import * as logger from "firebase-functions/logger";
+import { searchMedications, getMedicationById } from './searchMedications';
+import { checkInteraction, getMedicationInteractions } from './interactionChecker';
+import { ragQuery } from './ragQuery';
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+admin.initializeApp();
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10 });
+const corsHandler = cors({ origin: true });
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+
+// ===========================================
+// HEALTH CHECK
+// ===========================================
+
+export const healthCheck = functions.https.onRequest((req, res) => {
+  corsHandler(req, res, () => {
+    res.json({
+      status: 'ok',
+      time: new Date().toISOString(),
+      endpoints: [
+        'GET /healthCheck',
+        'GET /searchMeds?q=ibu',
+        'GET /getMedication?id=123',
+        'POST /checkDrugInteraction',
+        'GET /drugInteractions?drug=Ibuprofen',
+        'POST /askHealthDose'
+      ]
+    });
+  });
+});
+
+
+// ===========================================
+// SEARCH ENDPOINTS
+// ===========================================
+
+export const searchMeds = functions.https.onRequest(async (req, res) => {
+  corsHandler(req, res, async () => {
+    try {
+      const searchTerm = req.query.q as string;
+      const limit = parseInt(req.query.limit as string) || 20;
+
+      if (!searchTerm) {
+        res.status(400).json({ error: 'Search term required (use ?q=ibu)' });
+        return;
+      }
+
+      if (searchTerm.length < 2) {
+        res.json({ searchTerm, count: 0, results: [], message: 'Type at least 2 characters' });
+        return;
+      }
+
+      const results = await searchMedications(searchTerm, limit);
+      res.json(results);
+    } catch (error) {
+      console.error('Search error:', error);
+      res.status(500).json({ error: 'Search failed' });
+    }
+  });
+});
+
+
+export const getMedication = functions.https.onRequest(async (req, res) => {
+  corsHandler(req, res, async () => {
+    try {
+      const id = req.query.id as string;
+
+      if (!id) {
+        res.status(400).json({ error: 'Medication ID required' });
+        return;
+      }
+
+      const medication = await getMedicationById(id);
+
+      if (!medication) {
+        res.status(404).json({ error: 'Medication not found' });
+        return;
+      }
+
+      res.json(medication);
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Failed to get medication' });
+    }
+  });
+});
+
+
+// ===========================================
+// INTERACTION ENDPOINTS
+// ===========================================
+
+export const checkDrugInteraction = functions.https.onRequest(async (req, res) => {
+  corsHandler(req, res, async () => {
+    try {
+      if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Use POST method' });
+        return;
+      }
+
+      const { drugA, drugB } = req.body;
+
+      if (!drugA || !drugB) {
+        res.status(400).json({
+          error: 'Both drugA and drugB required',
+          example: { drugA: 'Ibuprofen', drugB: 'Warfarin' }
+        });
+        return;
+      }
+
+      const result = await checkInteraction(drugA, drugB);
+      res.json(result);
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Check failed' });
+    }
+  });
+});
+
+
+export const drugInteractions = functions.https.onRequest(async (req, res) => {
+  corsHandler(req, res, async () => {
+    try {
+      const drug = req.query.drug as string;
+
+      if (!drug) {
+        res.status(400).json({ error: 'drug parameter required' });
+        return;
+      }
+
+      const result = await getMedicationInteractions(drug);
+      res.json(result);
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Failed to get interactions' });
+    }
+  });
+});
+
+
+// ===========================================
+// RAG CHAT ENDPOINT
+// ===========================================
+
+export const askHealthDose = functions.https.onRequest(async (req, res) => {
+  if (req.method === 'OPTIONS') {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.status(204).send('');
+    return;
+  }
+
+  res.set('Access-Control-Allow-Origin', '*');
+
+  if (req.method !== 'POST') {
+    res.status(405).json({ success: false, error: 'Method not allowed. Use POST.' });
+    return;
+  }
+
+  try {
+    const { question } = req.body;
+
+    if (!question) {
+      res.status(400).json({ success: false, error: 'Question is required' });
+      return;
+    }
+
+    console.log(`Question received: "${question}"`);
+
+    const result = await ragQuery(question);
+
+    console.log(`Response sent (${result.sources?.length || 0} sources)`);
+
+    res.json({ ...result, timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Error in askHealthDose:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      answer: 'Sorry, I encountered an error processing your question.',
+      sources: []
+    });
+  }
+});
+
+
+// ===========================================
+// TEST RAG ENDPOINT
+// ===========================================
+
+export const testRag = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+
+  try {
+    const testQuestion = (req.query.q as string) || 'What are the side effects of ibuprofen?';
+
+    console.log(`Test RAG with: "${testQuestion}"`);
+
+    const result = await ragQuery(testQuestion);
+
+    res.json({ success: true, message: 'RAG test complete', question: testQuestion, result });
+  } catch (error) {
+    console.error('Test RAG error:', error);
+    res.status(500).json({ success: false, error: String(error) });
+  }
+});

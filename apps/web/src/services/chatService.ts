@@ -1,3 +1,5 @@
+import { firebaseProjectId } from '../lib/firebase/config'
+
 export interface AIMessage {
   role: 'user' | 'assistant'
   content: string
@@ -263,6 +265,48 @@ function lookupAnswer(query: string): string | null {
   return lines.join('\n')
 }
 
+// ─── RAG backend ──────────────────────────────────────────────────────────────
+
+type RagSource = { title: string; drugName: string; excerpt: string; relevance: number }
+type RagResponse = {
+  success: boolean
+  question: string
+  answer: string
+  sources?: RagSource[]
+  error?: string
+}
+
+function getFunctionsBaseUrl() {
+  const explicit = (import.meta.env.VITE_FUNCTIONS_URL as string | undefined) ?? ''
+  if (explicit) return explicit.replace(/\/+$/, '')
+  const projectId = firebaseProjectId || 'med-assist-9edf0'
+  return `https://us-central1-${projectId}.cloudfunctions.net`
+}
+
+async function queryRag(question: string): Promise<RagResponse> {
+  const baseUrl = getFunctionsBaseUrl()
+  const res = await fetch(`${baseUrl}/askHealthDose`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question }),
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(text || `RAG request failed (${res.status})`)
+  }
+
+  return (await res.json()) as RagResponse
+}
+
+function formatSources(sources: RagSource[] | undefined) {
+  if (!sources || sources.length === 0) return ''
+  const lines = sources.map(
+    s => `- ${s.title}${s.drugName ? ` (${s.drugName})` : ''} [${s.relevance.toFixed(2)}]`
+  )
+  return `\n\nSources:\n${lines.join('\n')}`
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -276,30 +320,14 @@ export async function sendToAI(messages: AIMessage[], _apiKey: string): Promise<
 
   if (answer) return answer
 
-  // Off-topic or unrecognised drug
-  const lower = query.toLowerCase()
-  const pharmacologyTerms = [
-    'drug',
-    'medication',
-    'medicine',
-    'pill',
-    'tablet',
-    'capsule',
-    'dose',
-    'dosage',
-    'side effect',
-    'interaction',
-    'prescription',
-    'pharmacy',
-    'antibiotic',
-    'analgesic',
-    'pharmacology',
-  ]
-  const isPharmacology = pharmacologyTerms.some(t => lower.includes(t))
-
-  if (isPharmacology) {
-    return "My knowledge base currently covers **Ibuprofen**, **Warfarin**, and **Amoxicillin** in detail. I don't have dataset information for the medication you asked about. Please consult a licensed pharmacist or healthcare professional for information on other drugs."
+  try {
+    const result = await queryRag(query)
+    if (result?.answer) {
+      return `${result.answer}${formatSources(result.sources)}`
+    }
+  } catch (error) {
+    console.error('RAG fallback failed:', error)
   }
 
-  return 'I specialise in clinical pharmacology and medication information. Currently my knowledge base covers **Ibuprofen**, **Warfarin**, and **Amoxicillin**. Please ask a question about one of these medications or about pharmacology in general.'
+  return "I couldn't reach the HealthDose knowledge base right now. Please try again later."
 }

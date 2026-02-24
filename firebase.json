@@ -9,6 +9,7 @@
     }
   ],
   "hosting": {
+    "site": "med-assist-9edf0",
     "public": "apps/web/dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [

@@ -1,0 +1,79 @@
+IBUPROFEN - Complete Medication Guide
+
+GENERIC NAME: Ibuprofen
+BRAND NAMES: Advil, Motrin, Nurofen, Caldolor
+
+DRUG CLASS: Nonsteroidal Anti-inflammatory Drug (NSAID)
+
+MECHANISM OF ACTION:
+Ibuprofen works by inhibiting the enzymes cyclooxygenase-1 (COX-1) and cyclooxygenase-2 (COX-2). These enzymes are responsible for producing prostaglandins, which are chemical messengers that cause inflammation, pain, and fever in the body. By blocking these enzymes, ibuprofen reduces the production of prostaglandins, leading to decreased pain and inflammation.
+
+INDICATIONS AND USAGE:
+- Mild to moderate pain relief (headache, toothache, backache)
+- Fever reduction
+- Inflammation reduction (arthritis, muscle strains)
+- Menstrual cramps (dysmenorrhea)
+- Minor aches and pains
+
+DOSAGE GUIDELINES:
+Adults and children over 12 years:
+- 200-400mg every 4-6 hours as needed
+- Do not exceed 1200mg per day without doctor supervision
+- Take with food or milk to reduce stomach upset
+
+Children (under 12):
+- Weight-based dosing: 5-10mg/kg every 6-8 hours
+- Maximum: 40mg/kg per day
+
+CONTRAINDICATIONS:
+- Known hypersensitivity to ibuprofen or other NSAIDs
+- History of asthma attacks after taking NSAIDs
+- Active peptic ulcer disease or GI bleeding
+- Severe heart failure (NYHA class III-IV)
+- Late pregnancy (third trimester, can cause premature closure of ductus arteriosus)
+- Coronary artery bypass graft (CABG) surgery perioperative pain
+
+WARNINGS AND PRECAUTIONS:
+- Cardiovascular risk: May increase risk of serious cardiovascular thrombotic events
+- Gastrointestinal risk: Can cause GI bleeding, ulceration, and perforation
+- Renal effects: Can reduce renal blood flow, risk in elderly or dehydrated patients
+- Hepatic effects: Rare cases of severe liver injury
+- Anaphylactoid reactions: Can occur in patients with aspirin triad
+
+COMMON SIDE EFFECTS:
+- Nausea and vomiting
+- Heartburn and dyspepsia
+- Diarrhea or constipation
+- Dizziness and headache
+- Drowsiness
+
+SERIOUS SIDE EFFECTS (seek medical attention):
+- Signs of stomach bleeding: black/bloody stools, coffee-ground vomit
+- Signs of heart attack: chest pain, shortness of breath
+- Signs of stroke: sudden numbness, confusion, vision changes
+- Signs of allergic reaction: rash, hives, difficulty breathing
+- Signs of liver problems: dark urine, yellowing skin/eyes
+
+DRUG INTERACTIONS:
+1. Warfarin (Coumadin): SEVERE - Increased bleeding risk
+2. Aspirin: MODERATE - Increased GI side effects, reduced cardioprotection
+3. Lisinopril (ACE inhibitors): MODERATE - Reduced blood pressure effect
+4. Metformin: MODERATE - Possible increased metformin levels
+5. Furosemide (diuretics): MODERATE - Reduced diuretic effect
+6. Lithium: MODERATE - Increased lithium levels, risk of toxicity
+7. Methotrexate: MODERATE - Increased methotrexate toxicity
+8. SSRIs (antidepressants): MILD - Increased bleeding risk
+
+PHARMACOKINETICS:
+- Absorption: Well absorbed orally (80-85% bioavailability)
+- Onset of action: 30-60 minutes
+- Peak plasma levels: 1-2 hours
+- Protein binding: 90-99% bound to plasma proteins
+- Metabolism: Hepatic via CYP2C9
+- Half-life: 2-4 hours
+- Excretion: Urine (primarily as metabolites, <1% unchanged)
+
+STORAGE:
+- Store at room temperature 20-25°C (68-77°F)
+- Keep away from moisture and heat
+- Protect from light

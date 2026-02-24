@@ -1,0 +1,137 @@
+AMOXICILLIN - Complete Medication Guide
+
+GENERIC NAME: Amoxicillin
+BRAND NAMES: Amoxil, Moxatag, Trimox
+
+DRUG CLASS: Penicillin Antibiotic (Aminopenicillin)
+
+MECHANISM OF ACTION:
+Amoxicillin is a bactericidal antibiotic that works by inhibiting bacterial cell wall synthesis. It binds to penicillin-binding proteins (PBPs) inside the bacterial cell wall, inhibiting the transpeptidation step of peptidoglycan synthesis. This weakens the cell wall and leads to osmotic lysis and death of susceptible bacteria. Amoxicillin is effective against gram-positive and some gram-negative bacteria.
+
+INDICATIONS AND USAGE:
+- Upper respiratory infections: Pharyngitis, tonsillitis, sinusitis, otitis media
+- Lower respiratory infections: Bronchitis, pneumonia
+- Skin and skin structure infections
+- Urinary tract infections (UTI)
+- Helicobacter pylori eradication (with other medications)
+- Lyme disease (early stages)
+- Prophylaxis for bacterial endocarditis (dental procedures)
+- Anthrax exposure (post-exposure prophylaxis)
+
+COMMON BACTERIA COVERED:
+- Streptococcus pneumoniae
+- Streptococcus pyogenes
+- Haemophilus influenzae
+- Escherichia coli
+- Proteus mirabilis
+- Salmonella species
+- Enterococcus faecalis
+- Helicobacter pylori
+
+DOSAGE GUIDELINES:
+Adults:
+- Mild to moderate infections: 250-500 mg every 8 hours
+- Severe infections: 875 mg every 12 hours
+- Maximum dose: 2-3 grams per day
+
+Children (based on weight):
+- 20-40 mg/kg/day in divided doses every 8 hours
+- 25-45 mg/kg/day in divided doses every 12 hours
+- Maximum: 2-3 grams per day
+
+Special populations:
+- Renal impairment: Dose adjustment required for CrCl <30 mL/min
+- Hemodialysis: Administer after dialysis
+- Elderly: Use normal adult dosing unless renal impairment
+
+CONTRAINDICATIONS:
+- Known hypersensitivity to penicillins or beta-lactam antibiotics
+- History of severe allergic reaction to cephalosporins (cross-sensitivity)
+- Infectious mononucleosis (increased risk of rash)
+
+WARNINGS AND PRECAUTIONS:
+- Anaphylaxis: Serious allergic reactions can occur (0.01-0.05% of courses)
+- Cross-sensitivity: 10% cross-sensitivity with cephalosporins
+- Clostridium difficile-associated diarrhea: Can occur during or after treatment
+- Superinfection: Prolonged use may cause fungal or bacterial overgrowth
+- Jarisch-Herxheimer reaction: In treatment of Lyme disease or syphilis
+- False-positive urine glucose tests (copper reduction method)
+
+COMMON SIDE EFFECTS:
+- Diarrhea (most common, 5-10%)
+- Nausea and vomiting
+- Abdominal pain
+- Rash (especially in patients with mononucleosis)
+- Vaginal yeast infection
+- Headache
+- Altered taste
+
+SERIOUS SIDE EFFECTS (seek medical attention):
+- Severe allergic reaction (anaphylaxis): difficulty breathing, hives, swelling
+- Clostridium difficile diarrhea: watery/bloody diarrhea, abdominal cramping
+- Severe skin reactions: Stevens-Johnson syndrome, toxic epidermal necrolysis
+- Seizures (especially with high doses or renal impairment)
+- Hepatitis or cholestatic jaundice (rare)
+- Interstitial nephritis (rare)
+
+DRUG INTERACTIONS:
+1. Probenecid: Increases amoxicillin levels (used intentionally)
+2. Methotrexate: Decreased methotrexate elimination, increased toxicity
+3. Oral contraceptives: Possibly reduced contraceptive efficacy (use backup method)
+4. Allopurinol: Increased risk of rash
+5. Warfarin: May increase INR (monitor closely)
+6. Typhoid vaccine: Reduced vaccine efficacy
+7. Tetracyclines: May interfere with bactericidal action
+
+PREGNANCY AND LACTATION:
+- Pregnancy Category B: Generally considered safe
+- Crosses placenta but no evidence of fetal harm
+- Excreted in breast milk in small amounts
+- Generally compatible with breastfeeding (may cause diarrhea in infant)
+
+PHARMACOKINETICS:
+- Absorption: Rapidly and well absorbed (75-90% bioavailability)
+- Food effect: Not significantly affected by food
+- Peak levels: 1-2 hours after oral dose
+- Distribution: Widely distributed; crosses placental barrier
+- Protein binding: 17-20%
+- Metabolism: Partial hepatic metabolism
+- Half-life: 60-90 minutes (prolonged in renal impairment)
+- Excretion: 60-80% excreted unchanged in urine
+
+SPECTRUM OF ACTIVITY:
+Good activity against:
+- Streptococcus species
+- Enterococcus faecalis
+- Listeria monocytogenes
+- E. coli (non-ESBL producing)
+- Proteus mirabilis
+- Salmonella species
+- Helicobacter pylori
+
+Limited activity (resistance common):
+- Staphylococcus aureus (many strains resistant)
+- Klebsiella species
+- Pseudomonas aeruginosa
+- Anaerobes (better coverage with ampicillin-sulbactam)
+
+RESISTANCE MECHANISMS:
+- Beta-lactamase production (most common)
+- Altered penicillin-binding proteins
+- Reduced permeability
+- Efflux pumps
+
+STORAGE:
+- Store at room temperature 20-25°C (68-77°F)
+- Keep away from moisture and heat
+- Oral suspension: Refrigerate after reconstitution, discard after 14 days
+- Protect from light
+
+PATIENT EDUCATION:
+- Take at evenly spaced intervals to maintain blood levels
+- Complete entire course even if feeling better
+- Do not share antibiotics with others
+- Report any rash or signs of allergic reaction
+- Use alternative contraception if on birth control pills
+- Probiotics may help prevent diarrhea
+- Shake oral suspension well before use

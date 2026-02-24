@@ -16,14 +16,22 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@google-cloud/vertexai": "^1.10.0",
     "@repo/shared": "workspace:*",
     "@trpc/server": "^11.0.0-rc.660",
+    "cors": "^2.8.6",
+    "firebase-admin": "^13.6.1",
+    "firebase-functions": "^7.0.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@types/cors": "^2.8.19",
+    "@types/node": "^25.3.0",
     "eslint": "^8.57.0",
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2",
     "typescript": "5.5.4",
     "vitest": "^2.1.8"
   }

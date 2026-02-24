@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+import { clearAllSessions } from './Dashboard'
 
 const steps = [
   { label: 'Account', icon: '👤' },
@@ -76,6 +77,7 @@ export function GetStarted() {
     setError('')
     setLoading(true)
     try {
+      clearAllSessions() // Clear any previous user's sessions
       await signUp(email, password)
       navigate('/app')
     } catch (err: unknown) {
@@ -543,7 +545,10 @@ export function GetStarted() {
 
           {/* Back to home */}
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              clearAllSessions() // Clear sessions when returning to home
+              navigate('/')
+            }}
             className="mt-4 w-full py-3 text-sm text-gray-400 hover:text-[hsl(var(--eg-500))] transition-colors flex items-center justify-center gap-2"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

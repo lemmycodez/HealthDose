@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+import { useTheme } from '../ThemeContext'
 import { sendToAI, type AIMessage } from '../services/chatService'
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
@@ -28,6 +29,7 @@ const genId = () =>
     : Math.random().toString(36).slice(2) + Date.now().toString(36)
 
 const STORAGE_KEY = 'hd_chat_v1'
+const DELETED_STORAGE_KEY = 'hd_chat_deleted_v1'
 
 function loadSessions(): ChatSession[] {
   try {
@@ -40,6 +42,24 @@ function loadSessions(): ChatSession[] {
 
 function saveSessions(sessions: ChatSession[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions))
+}
+
+function loadDeletedSessions(): ChatSession[] {
+  try {
+    const raw = localStorage.getItem(DELETED_STORAGE_KEY)
+    return raw ? (JSON.parse(raw) as ChatSession[]) : []
+  } catch {
+    return []
+  }
+}
+
+function saveDeletedSessions(sessions: ChatSession[]) {
+  localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify(sessions))
+}
+
+export function clearAllSessions() {
+  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(DELETED_STORAGE_KEY)
 }
 
 function formatTime(ts: number) {
@@ -358,6 +378,109 @@ const Icons = {
       <polyline points="9 22 9 12 15 12 15 22" />
     </svg>
   ),
+  Sun: () => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-5 h-5"
+    >
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  ),
+  Moon: () => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-5 h-5"
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  ),
+  X: () => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-5 h-5"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
+  Paperclip: () => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-5 h-5"
+    >
+      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+    </svg>
+  ),
+  Image: () => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-5 h-5"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  ),
+  Restore: () => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-4 h-4"
+    >
+      <polyline points="1 4 1 10 7 10" />
+      <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+    </svg>
+  ),
+  ChevronDown: () => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-4 h-4"
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  ),
 }
 
 /* ─── Typing indicator ───────────────────────────────────────────────────── */
@@ -583,6 +706,7 @@ function SessionItem({
 }: SessionItemProps) {
   const [hovered, setHovered] = useState(false)
   const renameRef = useRef<HTMLInputElement>(null)
+  const { theme } = useTheme()
 
   useEffect(() => {
     if (isRenaming) renameRef.current?.focus()
@@ -591,9 +715,13 @@ function SessionItem({
   return (
     <div
       className={`group relative flex items-center gap-2.5 px-3 py-2.5 mx-2 rounded-xl cursor-pointer transition-all duration-150 ${
-        isActive
-          ? 'bg-zinc-800 text-white'
-          : 'text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200'
+        theme === 'dark'
+          ? isActive
+            ? 'bg-zinc-800 text-white'
+            : 'text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200'
+          : isActive
+            ? 'bg-emerald-50 text-gray-900'
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
       }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -602,7 +730,17 @@ function SessionItem({
       }}
     >
       {/* Icon */}
-      <span className={`flex-shrink-0 ${isActive ? 'text-emerald-400' : 'text-zinc-600'}`}>
+      <span
+        className={`flex-shrink-0 ${
+          theme === 'dark'
+            ? isActive
+              ? 'text-emerald-400'
+              : 'text-zinc-600'
+            : isActive
+              ? 'text-emerald-600'
+              : 'text-gray-400'
+        }`}
+      >
         <Icons.Chat />
       </span>
 
@@ -665,6 +803,7 @@ function SessionItem({
 
 export function Dashboard() {
   const { user, signOut } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   /* State */
@@ -676,6 +815,9 @@ export function Dashboard() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [deletedSessions, setDeletedSessions] = useState<ChatSession[]>(() => loadDeletedSessions())
+  const [deletedSectionOpen, setDeletedSectionOpen] = useState(false)
 
   /* Message editing */
   const [editMsgId, setEditMsgId] = useState<string | null>(null)
@@ -688,6 +830,11 @@ export function Dashboard() {
   /* Voice recording */
   const [isRecording, setIsRecording] = useState(false)
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null)
+
+  /* File upload */
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [filePreview, setFilePreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -703,6 +850,10 @@ export function Dashboard() {
   useEffect(() => {
     saveSessions(sessions)
   }, [sessions])
+
+  useEffect(() => {
+    saveDeletedSessions(deletedSessions)
+  }, [deletedSessions])
 
   /* Scroll to bottom */
   useEffect(() => {
@@ -746,6 +897,41 @@ export function Dashboard() {
     else startRecording()
   }
 
+  /* ── File upload ────────────────────────────────────────────────────── */
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB')
+      return
+    }
+
+    setUploadedFile(file)
+
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFilePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    } else {
+      setFilePreview(null)
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const removeFile = () => {
+    setUploadedFile(null)
+    setFilePreview(null)
+  }
+
   /* ── Session helpers ────────────────────────────────────────────────── */
   const createSession = useCallback(() => {
     const s: ChatSession = {
@@ -765,6 +951,10 @@ export function Dashboard() {
   const deleteSession = useCallback(
     (id: string) => {
       setSessions(prev => {
+        const toDelete = prev.find(s => s.id === id)
+        if (toDelete) {
+          setDeletedSessions(del => [toDelete, ...del])
+        }
         const next = prev.filter(s => s.id !== id)
         if (activeId === id) setActiveId(next[0]?.id ?? null)
         return next
@@ -772,6 +962,22 @@ export function Dashboard() {
     },
     [activeId]
   )
+
+  const restoreSession = useCallback(
+    (id: string) => {
+      const session = deletedSessions.find(s => s.id === id)
+      if (!session) return
+      setDeletedSessions(prev => prev.filter(s => s.id !== id))
+      setSessions(prev => [session, ...prev])
+      setActiveId(session.id)
+      setEditMsgId(null)
+    },
+    [deletedSessions]
+  )
+
+  const permanentlyDeleteSession = useCallback((id: string) => {
+    setDeletedSessions(prev => prev.filter(s => s.id !== id))
+  }, [])
 
   const patchSession = useCallback((id: string, patch: Partial<ChatSession>) => {
     setSessions(prev =>
@@ -847,7 +1053,7 @@ export function Dashboard() {
   /* ── Send new message ───────────────────────────────────────────────── */
   const sendMessage = useCallback(async () => {
     const text = input.trim()
-    if (!text || loading) return
+    if ((!text && !uploadedFile) || loading) return
 
     let sid = activeId
     if (!sid) {
@@ -864,7 +1070,21 @@ export function Dashboard() {
     }
 
     const isFirst = (sessions.find(s => s.id === sid)?.messages ?? []).length === 0
-    const userMsg: ChatMessage = { id: genId(), role: 'user', content: text, timestamp: Date.now() }
+
+    // Build message content
+    let messageContent = text
+    if (uploadedFile) {
+      messageContent = text
+        ? `${text}\n\n[Attached: ${uploadedFile.name}]`
+        : `[Attached: ${uploadedFile.name}]`
+    }
+
+    const userMsg: ChatMessage = {
+      id: genId(),
+      role: 'user',
+      content: messageContent,
+      timestamp: Date.now(),
+    }
     let updated: ChatMessage[] = []
 
     setSessions(prev =>
@@ -875,8 +1095,9 @@ export function Dashboard() {
       })
     )
     setInput('')
-    await callAI(sid!, updated, isFirst, text)
-  }, [input, loading, activeId, sessions, callAI])
+    removeFile() // Clear uploaded file after sending
+    await callAI(sid!, updated, isFirst, text || uploadedFile?.name || 'New Chat')
+  }, [input, loading, activeId, sessions, callAI, uploadedFile])
 
   /* ── Edit message ───────────────────────────────────────────────────── */
   const startEdit = (msg: ChatMessage) => {
@@ -938,6 +1159,7 @@ export function Dashboard() {
 
   /* ── Sign out ───────────────────────────────────────────────────────── */
   const handleSignOut = async () => {
+    clearAllSessions()
     await signOut()
     navigate('/')
   }
@@ -946,8 +1168,10 @@ export function Dashboard() {
      RENDER
   ═══════════════════════════════════════════════════════════════════════ */
   return (
-    <div className="h-screen flex bg-black overflow-hidden font-sans">
-      {/* ════════════════════════ SIDEBAR ══════════════════════════════ */}
+    <div
+      className={`h-screen flex overflow-hidden font-sans ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}
+    >
+      {/* ════════════════════════ SIDEBAR ══════════════════════════ */}
       {/*
         Use inline style for width so the Tailwind JIT class-scan issue
         cannot affect the toggle. The transition is handled by CSS transition.
@@ -957,27 +1181,43 @@ export function Dashboard() {
         className="flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out"
       >
         {/* Inner container always 260px wide — slides in/out via parent overflow:hidden */}
-        <div className="w-[260px] h-full flex flex-col bg-[#0f0f0f] border-r border-zinc-800/80">
+        <div
+          className={`w-[260px] h-full flex flex-col border-r ${theme === 'dark' ? 'bg-[#0f0f0f] border-zinc-800/80' : 'bg-white border-gray-200'}`}
+        >
           {/* ── Logo / header ── */}
-          <div className="flex-shrink-0 px-4 pt-5 pb-3 border-b border-zinc-800/60">
+          <div
+            className={`flex-shrink-0 px-4 pt-5 pb-3 border-b ${theme === 'dark' ? 'border-zinc-800/60' : 'border-gray-200'}`}
+          >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center shadow-md shadow-emerald-900/50">
+              <div
+                className={`w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center shadow-md ${theme === 'dark' ? 'shadow-emerald-900/50' : 'shadow-emerald-600/30'}`}
+              >
                 <svg viewBox="0 0 20 20" fill="white" className="w-4.5 h-4.5">
                   <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
                 </svg>
               </div>
               <div>
-                <p className="text-white text-sm font-bold tracking-tight leading-tight">
+                <p
+                  className={`text-sm font-bold tracking-tight leading-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
+                >
                   HealthDose AI
                 </p>
-                <p className="text-emerald-500 text-[10px] font-medium">Pharmacology Assistant</p>
+                <p
+                  className={`text-[10px] font-medium ${theme === 'dark' ? 'text-emerald-500' : 'text-emerald-600'}`}
+                >
+                  Pharmacology Assistant
+                </p>
               </div>
             </div>
 
             {/* New Chat button */}
             <button
               onClick={createSession}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-emerald-600/10 border border-emerald-600/30 text-emerald-400 hover:bg-emerald-600/20 hover:border-emerald-500/50 hover:text-emerald-300 text-sm font-medium transition-all duration-150"
+              className={`w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150 ${
+                theme === 'dark'
+                  ? 'bg-emerald-600/10 border border-emerald-600/30 text-emerald-400 hover:bg-emerald-600/20 hover:border-emerald-500/50 hover:text-emerald-300'
+                  : 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300'
+              }`}
             >
               <Icons.Plus />
               New Chat
@@ -988,17 +1228,23 @@ export function Dashboard() {
           <div className="flex-1 overflow-y-auto py-3 custom-scroll">
             {sessions.length === 0 ? (
               <div className="px-4 mt-6 text-center">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 ${theme === 'dark' ? 'bg-zinc-800 text-zinc-600' : 'bg-gray-100 text-gray-400'}`}
+                >
                   <Icons.Chat />
                 </div>
-                <p className="text-zinc-600 text-xs leading-relaxed">
+                <p
+                  className={`text-xs leading-relaxed ${theme === 'dark' ? 'text-zinc-600' : 'text-gray-500'}`}
+                >
                   No conversations yet. Start a new chat to begin.
                 </p>
               </div>
             ) : (
               grouped.map(([label, group]) => (
                 <div key={label} className="mb-4">
-                  <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest px-5 py-1">
+                  <p
+                    className={`text-[9px] font-bold uppercase tracking-widest px-5 py-1 ${theme === 'dark' ? 'text-zinc-600' : 'text-gray-500'}`}
+                  >
                     {label}
                   </p>
                   {group.map(session => (
@@ -1022,17 +1268,125 @@ export function Dashboard() {
                 </div>
               ))
             )}
+
+            {/* ── Recently Deleted ── */}
+            {deletedSessions.length > 0 && (
+              <div className="mt-2">
+                <button
+                  onClick={() => setDeletedSectionOpen(o => !o)}
+                  className={`w-full flex items-center gap-1.5 px-5 py-2 text-left transition-colors ${
+                    theme === 'dark'
+                      ? 'text-zinc-500 hover:text-zinc-300'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <span
+                    className={`transition-transform duration-200 ${
+                      deletedSectionOpen ? 'rotate-0' : '-rotate-90'
+                    }`}
+                  >
+                    <Icons.ChevronDown />
+                  </span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest">
+                    Recently Deleted
+                  </span>
+                  <span
+                    className={`ml-auto text-[9px] font-medium ${
+                      theme === 'dark' ? 'text-zinc-600' : 'text-gray-400'
+                    }`}
+                  >
+                    {deletedSessions.length}
+                  </span>
+                </button>
+
+                {deletedSectionOpen && (
+                  <div className="mt-1">
+                    {deletedSessions.map(session => (
+                      <div
+                        key={session.id}
+                        onClick={() => restoreSession(session.id)}
+                        className={`group relative flex items-center gap-2.5 px-3 py-2.5 mx-2 rounded-xl cursor-pointer transition-all duration-150 ${
+                          theme === 'dark'
+                            ? 'text-zinc-500 hover:bg-zinc-800/60 hover:text-zinc-300'
+                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                        }`}
+                      >
+                        {/* Icon */}
+                        <span
+                          className={`flex-shrink-0 ${
+                            theme === 'dark' ? 'text-zinc-700' : 'text-gray-400'
+                          }`}
+                        >
+                          <Icons.Chat />
+                        </span>
+
+                        {/* Name */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium truncate leading-tight line-through opacity-70">
+                            {session.name || 'New Chat'}
+                          </p>
+                          <p
+                            className={`text-[10px] mt-0.5 ${
+                              theme === 'dark' ? 'text-zinc-700' : 'text-gray-400'
+                            }`}
+                          >
+                            {formatDate(session.updatedAt)}
+                          </p>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div
+                          className="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => restoreSession(session.id)}
+                            title="Restore conversation"
+                            className={`p-1 rounded-md transition-colors ${
+                              theme === 'dark'
+                                ? 'text-zinc-500 hover:text-emerald-400 hover:bg-zinc-700'
+                                : 'text-gray-500 hover:text-emerald-600 hover:bg-emerald-50'
+                            }`}
+                          >
+                            <Icons.Restore />
+                          </button>
+                          <button
+                            onClick={() => permanentlyDeleteSession(session.id)}
+                            title="Delete permanently"
+                            className={`p-1 rounded-md transition-colors ${
+                              theme === 'dark'
+                                ? 'text-zinc-500 hover:text-red-400 hover:bg-zinc-700'
+                                : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+                            }`}
+                          >
+                            <Icons.Trash />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* ── User footer ── */}
-          <div className="flex-shrink-0 border-t border-zinc-800/60 p-3">
+          <div
+            className={`flex-shrink-0 border-t p-3 ${theme === 'dark' ? 'border-zinc-800/60' : 'border-gray-200'}`}
+          >
             <div className="flex items-center gap-2.5 mb-2">
               <UserAvatarMd initial={userInitial} />
               <div className="flex-1 min-w-0">
-                <p className="text-white text-xs font-medium truncate leading-tight">
+                <p
+                  className={`text-xs font-medium truncate leading-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
+                >
                   {user?.displayName ?? user?.email?.split('@')[0] ?? 'User'}
                 </p>
-                <p className="text-zinc-500 text-[10px] truncate mt-0.5">{user?.email}</p>
+                <p
+                  className={`text-[10px] truncate mt-0.5 ${theme === 'dark' ? 'text-zinc-500' : 'text-gray-500'}`}
+                >
+                  {user?.email}
+                </p>
               </div>
             </div>
 
@@ -1040,21 +1394,34 @@ export function Dashboard() {
               <button
                 onClick={() => navigate('/')}
                 title="Home"
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 text-xs transition-colors"
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs transition-colors ${
+                  theme === 'dark'
+                    ? 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
               >
                 <Icons.Home />
                 <span>Home</span>
               </button>
               <button
+                onClick={() => setSettingsOpen(true)}
                 title="Settings"
-                className="flex items-center justify-center py-2 px-3 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                className={`flex items-center justify-center py-2 px-3 rounded-lg transition-colors ${
+                  theme === 'dark'
+                    ? 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
               >
                 <Icons.Settings />
               </button>
               <button
                 onClick={handleSignOut}
                 title="Sign out"
-                className="flex items-center justify-center py-2 px-3 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-zinc-800/80 transition-colors"
+                className={`flex items-center justify-center py-2 px-3 rounded-lg transition-colors ${
+                  theme === 'dark'
+                    ? 'text-zinc-500 hover:text-red-400 hover:bg-zinc-800/80'
+                    : 'text-gray-600 hover:text-red-500 hover:bg-red-50'
+                }`}
               >
                 <Icons.SignOut />
               </button>
@@ -1066,11 +1433,17 @@ export function Dashboard() {
       {/* ════════════════════════ CHAT AREA ════════════════════════════ */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* ── Header ── */}
-        <header className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-[#0f0f0f] border-b border-zinc-800/80">
+        <header
+          className={`flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b ${theme === 'dark' ? 'bg-[#0f0f0f] border-zinc-800/80' : 'bg-white border-gray-200'}`}
+        >
           {/* Sidebar toggle */}
           <button
             onClick={() => setSidebarOpen(o => !o)}
-            className="p-2 rounded-xl text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors"
+            className={`p-2 rounded-xl transition-colors ${
+              theme === 'dark'
+                ? 'text-zinc-500 hover:text-white hover:bg-zinc-800'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+            }`}
             title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
           >
             {sidebarOpen ? <Icons.ChevronLeft /> : <Icons.Menu />}
@@ -1080,10 +1453,16 @@ export function Dashboard() {
           <div className="flex items-center gap-3">
             <BotAvatarMd />
             <div>
-              <p className="text-white font-semibold text-sm leading-tight">HealthDose AI</p>
+              <p
+                className={`font-semibold text-sm leading-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
+              >
+                HealthDose AI
+              </p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-green" />
-                <span className="text-emerald-500 text-[11px] font-medium">
+                <span
+                  className={`text-[11px] font-medium ${theme === 'dark' ? 'text-emerald-500' : 'text-emerald-600'}`}
+                >
                   Pharmacology Assistant · Online
                 </span>
               </div>
@@ -1095,7 +1474,11 @@ export function Dashboard() {
             <button
               onClick={() => patchSession(activeSession.id, { messages: [], name: 'New Chat' })}
               title="Clear this conversation"
-              className="ml-auto p-2 rounded-xl text-zinc-600 hover:text-red-400 hover:bg-zinc-900 transition-colors text-xs flex items-center gap-1.5"
+              className={`ml-auto p-2 rounded-xl transition-colors text-xs flex items-center gap-1.5 ${
+                theme === 'dark'
+                  ? 'text-zinc-600 hover:text-red-400 hover:bg-zinc-900'
+                  : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+              }`}
             >
               <Icons.Trash />
               <span className="hidden sm:inline">Clear</span>
@@ -1104,14 +1487,23 @@ export function Dashboard() {
         </header>
 
         {/* ── Messages ── */}
-        <div className="flex-1 overflow-y-auto custom-scroll px-4 sm:px-8 lg:px-20 py-6 space-y-6 bg-black">
+        <div
+          className={`flex-1 overflow-y-auto custom-scroll px-4 sm:px-8 lg:px-20 py-6 space-y-6 ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}
+        >
           {/* Welcome / empty state */}
           {(!activeSession || activeSession.messages.length === 0) && !loading && (
             <div className="flex flex-col items-center justify-center h-full text-center pb-20">
               <BotAvatarLg />
-              <h2 className="text-white text-2xl font-bold mt-6 mb-2">HealthDose AI</h2>
-              <p className="text-zinc-500 text-sm max-w-sm mb-8 leading-relaxed">
-                Your clinical pharmacology assistant. Ask about drug interactions, mechanisms of
+              <h2
+                className={`text-2xl font-bold mt-6 mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
+              >
+                Hey {user?.displayName?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'there'}, how
+                may I assist you today?
+              </h2>
+              <p
+                className={`text-sm max-w-sm mb-8 leading-relaxed ${theme === 'dark' ? 'text-zinc-500' : 'text-gray-600'}`}
+              >
+                I'm your clinical pharmacology assistant. Ask about drug interactions, mechanisms of
                 action, dosing, and more.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
@@ -1122,7 +1514,11 @@ export function Dashboard() {
                       setInput(q)
                       inputRef.current?.focus()
                     }}
-                    className="text-left p-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 text-zinc-300 hover:border-emerald-700/60 hover:bg-zinc-900 hover:text-white text-sm transition-all duration-150 leading-snug"
+                    className={`text-left p-4 rounded-2xl border text-sm transition-all duration-150 leading-snug ${
+                      theme === 'dark'
+                        ? 'border-zinc-800 bg-zinc-900/40 text-zinc-300 hover:border-emerald-700/60 hover:bg-zinc-900 hover:text-white'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50 hover:text-gray-900'
+                    }`}
                   >
                     <svg
                       viewBox="0 0 20 20"
@@ -1164,10 +1560,86 @@ export function Dashboard() {
         </div>
 
         {/* ── Input bar ── */}
-        <div className="flex-shrink-0 px-4 sm:px-8 lg:px-20 py-4 bg-[#0f0f0f] border-t border-zinc-800/80">
+        <div
+          className={`flex-shrink-0 px-4 sm:px-8 lg:px-20 py-4 border-t ${theme === 'dark' ? 'bg-[#0f0f0f] border-zinc-800/80' : 'bg-white border-gray-200'}`}
+        >
+          {/* File preview */}
+          {uploadedFile && (
+            <div className="max-w-4xl mx-auto mb-3">
+              <div
+                className={`inline-flex items-center gap-3 px-4 py-3 rounded-xl border ${
+                  theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-gray-50 border-gray-300'
+                }`}
+              >
+                {filePreview ? (
+                  <img
+                    src={filePreview}
+                    alt="Preview"
+                    className="w-16 h-16 object-cover rounded-lg"
+                  />
+                ) : (
+                  <div
+                    className={`w-16 h-16 rounded-lg flex items-center justify-center ${
+                      theme === 'dark' ? 'bg-zinc-800' : 'bg-gray-200'
+                    }`}
+                  >
+                    <Icons.Paperclip />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={`text-sm font-medium truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
+                  >
+                    {uploadedFile.name}
+                  </p>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-zinc-500' : 'text-gray-500'}`}>
+                    {(uploadedFile.size / 1024).toFixed(1)} KB
+                  </p>
+                </div>
+                <button
+                  onClick={removeFile}
+                  className={`p-2 rounded-lg transition-colors ${
+                    theme === 'dark'
+                      ? 'text-zinc-500 hover:text-red-400 hover:bg-zinc-800'
+                      : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+                  }`}
+                >
+                  <Icons.X />
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-end gap-2 max-w-4xl mx-auto">
+            {/* File upload button */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.pdf,.doc,.docx,.txt"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              title="Upload file or image"
+              disabled={loading}
+              className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-40 ${
+                theme === 'dark'
+                  ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 border border-gray-300'
+              }`}
+            >
+              <Icons.Paperclip />
+            </button>
+
             {/* Textarea */}
-            <div className="flex-1 flex items-end gap-2 bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 focus-within:border-emerald-600/50 focus-within:ring-1 focus-within:ring-emerald-600/20 transition-all">
+            <div
+              className={`flex-1 flex items-end gap-2 rounded-2xl px-4 py-3 border focus-within:ring-1 transition-all ${
+                theme === 'dark'
+                  ? 'bg-zinc-900 border-zinc-800 focus-within:border-emerald-600/50 focus-within:ring-emerald-600/20'
+                  : 'bg-white border-gray-300 focus-within:border-emerald-500 focus-within:ring-emerald-500/20'
+              }`}
+            >
               <textarea
                 ref={inputRef}
                 value={input}
@@ -1180,7 +1652,11 @@ export function Dashboard() {
                 }
                 rows={1}
                 disabled={loading}
-                className="flex-1 bg-transparent text-white text-sm placeholder-zinc-600 resize-none focus:outline-none leading-relaxed disabled:opacity-50"
+                className={`flex-1 bg-transparent text-sm resize-none focus:outline-none leading-relaxed disabled:opacity-50 ${
+                  theme === 'dark'
+                    ? 'text-white placeholder-zinc-600'
+                    : 'text-gray-900 placeholder-gray-500'
+                }`}
                 style={{ maxHeight: 140 }}
                 onInput={e => {
                   const el = e.currentTarget
@@ -1198,7 +1674,9 @@ export function Dashboard() {
               className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-40 ${
                 isRecording
                   ? 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-900/40 animate-pulse'
-                  : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700'
+                  : theme === 'dark'
+                    ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 border border-gray-300'
               }`}
             >
               {isRecording ? <Icons.MicOff /> : <Icons.Mic />}
@@ -1209,7 +1687,11 @@ export function Dashboard() {
               onClick={sendMessage}
               disabled={loading || !input.trim()}
               title="Send (Enter)"
-              className="w-11 h-11 rounded-2xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all shadow-lg shadow-emerald-900/40 hover:-translate-y-0.5 active:translate-y-0"
+              className={`w-11 h-11 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all shadow-lg hover:-translate-y-0.5 active:translate-y-0 ${
+                theme === 'dark'
+                  ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/40'
+                  : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30'
+              }`}
             >
               {loading ? (
                 <svg className="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
@@ -1243,12 +1725,133 @@ export function Dashboard() {
             </div>
           )}
 
-          <p className="text-center text-[10px] text-zinc-700 mt-2.5 max-w-4xl mx-auto">
+          <p
+            className={`text-center text-[10px] mt-2.5 max-w-4xl mx-auto ${theme === 'dark' ? 'text-zinc-700' : 'text-gray-500'}`}
+          >
             HealthDose AI provides general pharmacological information only. Always consult a
             licensed healthcare professional before making medical decisions.
           </p>
         </div>
       </main>
+
+      {/* ════════════════════════ SETTINGS MODAL ════════════════════════════ */}
+      {settingsOpen && (
+        <div
+          className={`fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${theme === 'dark' ? 'bg-black/60' : 'bg-gray-900/40'}`}
+          onClick={() => setSettingsOpen(false)}
+        >
+          <div
+            className={`border rounded-2xl shadow-2xl max-w-md w-full overflow-hidden ${
+              theme === 'dark' ? 'bg-[#0f0f0f] border-zinc-800' : 'bg-white border-gray-200'
+            }`}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div
+              className={`flex items-center justify-between px-6 py-4 border-b ${theme === 'dark' ? 'border-zinc-800' : 'border-gray-200'}`}
+            >
+              <h2
+                className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
+              >
+                Settings
+              </h2>
+              <button
+                onClick={() => setSettingsOpen(false)}
+                className={`p-2 rounded-lg transition-colors ${
+                  theme === 'dark'
+                    ? 'text-zinc-500 hover:text-white hover:bg-zinc-800'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <Icons.X />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Theme Toggle */}
+              <div>
+                <label
+                  className={`block text-sm font-medium mb-3 ${theme === 'dark' ? 'text-zinc-300' : 'text-gray-700'}`}
+                >
+                  Appearance
+                </label>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={toggleTheme}
+                    className={`flex-1 flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 transition-all ${
+                      theme === 'light'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : theme === 'dark'
+                          ? 'border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                          : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                    }`}
+                  >
+                    <Icons.Sun />
+                    <span className="font-medium">Light</span>
+                  </button>
+                  <button
+                    onClick={toggleTheme}
+                    className={`flex-1 flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 transition-all ${
+                      theme === 'dark'
+                        ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+                        : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                    }`}
+                  >
+                    <Icons.Moon />
+                    <span className="font-medium">Dark</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Account Info */}
+              <div
+                className={`pt-4 border-t ${theme === 'dark' ? 'border-zinc-800' : 'border-gray-200'}`}
+              >
+                <label
+                  className={`block text-sm font-medium mb-3 ${theme === 'dark' ? 'text-zinc-300' : 'text-gray-700'}`}
+                >
+                  Account
+                </label>
+                <div className="space-y-2 text-sm">
+                  <div
+                    className={`flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}
+                  >
+                    <span
+                      className={`font-medium ${theme === 'dark' ? 'text-zinc-300' : 'text-gray-900'}`}
+                    >
+                      Name:
+                    </span>
+                    <span>{user?.displayName ?? user?.email?.split('@')[0] ?? 'User'}</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}
+                  >
+                    <span
+                      className={`font-medium ${theme === 'dark' ? 'text-zinc-300' : 'text-gray-900'}`}
+                    >
+                      Email:
+                    </span>
+                    <span>{user?.email}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div
+              className={`px-6 py-4 border-t ${theme === 'dark' ? 'bg-zinc-900/50 border-zinc-800' : 'bg-gray-50 border-gray-200'}`}
+            >
+              <button
+                onClick={() => setSettingsOpen(false)}
+                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-all"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

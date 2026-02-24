@@ -1,6 +1,9 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+import { clearAllSessions } from './Dashboard'
+import { sendPasswordResetEmail } from 'firebase/auth'
+import { auth } from '@/lib/firebase/config'
 
 export function Login() {
   const navigate = useNavigate()
@@ -10,12 +13,18 @@ export function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
+  const [resetSuccess, setResetSuccess] = useState(false)
+  const [resetError, setResetError] = useState('')
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
+      clearAllSessions() // Clear any previous user's sessions
       await signIn(email, password)
       navigate('/app')
     } catch (err: unknown) {
@@ -33,6 +42,35 @@ export function Login() {
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handlePasswordReset = async (e: FormEvent) => {
+    e.preventDefault()
+    setResetError('')
+    setResetSuccess(false)
+
+    if (!resetEmail.trim()) {
+      setResetError('Please enter your email address.')
+      return
+    }
+
+    setResetLoading(true)
+    try {
+      await sendPasswordResetEmail(auth, resetEmail)
+      setResetSuccess(true)
+      setResetEmail('')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : ''
+      if (message.includes('user-not-found')) {
+        setResetError('No account found with this email address.')
+      } else if (message.includes('invalid-email')) {
+        setResetError('Please enter a valid email address.')
+      } else {
+        setResetError('Failed to send reset email. Please try again.')
+      }
+    } finally {
+      setResetLoading(false)
     }
   }
 
@@ -183,6 +221,7 @@ export function Login() {
                 </label>
                 <button
                   type="button"
+                  onClick={() => setShowForgotPassword(true)}
                   className="text-sm text-[hsl(var(--eg-600))] dark:text-[hsl(var(--eg-400))] hover:underline font-medium"
                 >
                   Forgot password?
@@ -288,6 +327,182 @@ export function Login() {
           </button>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => {
+            setShowForgotPassword(false)
+            setResetError('')
+            setResetSuccess(false)
+            setResetEmail('')
+          }}
+        >
+          <div
+            className="bg-white dark:bg-[hsl(var(--eg-900))] border border-gray-200 dark:border-[hsl(var(--eg-800))] rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-[hsl(var(--eg-800))]">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Reset Password</h2>
+              <button
+                onClick={() => {
+                  setShowForgotPassword(false)
+                  setResetError('')
+                  setResetSuccess(false)
+                  setResetEmail('')
+                }}
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[hsl(var(--eg-800))] transition-colors"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-5 h-5"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {resetSuccess ? (
+                <div className="text-center py-4">
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-8 h-8 text-emerald-600 dark:text-emerald-400"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Email Sent!
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    We've sent a password reset link to your email. Please check your inbox and
+                    follow the instructions.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setShowForgotPassword(false)
+                      setResetSuccess(false)
+                    }}
+                    className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-all"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handlePasswordReset}>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Enter your email address and we'll send you a link to reset your password.
+                  </p>
+
+                  {/* Error */}
+                  {resetError && (
+                    <div className="mb-4 flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                      <svg
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="w-5 h-5 text-red-500 flex-shrink-0"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <p className="text-sm text-red-700 dark:text-red-400">{resetError}</p>
+                    </div>
+                  )}
+
+                  {/* Email Input */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Email address
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <svg
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          className="w-5 h-5 text-gray-400"
+                        >
+                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                        </svg>
+                      </div>
+                      <input
+                        type="email"
+                        value={resetEmail}
+                        onChange={e => setResetEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        required
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-[hsl(var(--eg-800))] bg-white dark:bg-[hsl(var(--eg-900))] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--eg-500))] focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgotPassword(false)
+                        setResetError('')
+                        setResetEmail('')
+                      }}
+                      className="flex-1 py-2.5 px-4 border border-gray-300 dark:border-[hsl(var(--eg-800))] text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-[hsl(var(--eg-800))] transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={resetLoading}
+                      className="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all flex items-center justify-center gap-2"
+                    >
+                      {resetLoading ? (
+                        <>
+                          <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            />
+                          </svg>
+                          Sending...
+                        </>
+                      ) : (
+                        'Send Reset Link'
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

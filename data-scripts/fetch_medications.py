@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-print("📥 Fetching medication data from OpenFDA...")
+print("Fetching medication data from OpenFDA...")
 
 # OpenFDA API endpoint for drug labels
 url = "https://api.fda.gov/drug/label.json"
@@ -35,9 +35,9 @@ while page <= 5:  # Get 5 pages = 500 drugs (enough for testing)
         drugs = data.get('results', [])
         all_drugs.extend(drugs)
         total_fetched += len(drugs)
-        print(f"✅ Got {len(drugs)} drugs (Total: {total_fetched})")
+        print(f"Got {len(drugs)} drugs (Total: {total_fetched})")
     else:
-        print(f"❌ Error: {response.status_code}")
+        print(f"Error: {response.status_code}")
     
     # Don't overwhelm the API
     time.sleep(1)
@@ -47,4 +47,4 @@ while page <= 5:  # Get 5 pages = 500 drugs (enough for testing)
 with open('medications_raw.json', 'w') as f:
     json.dump(all_drugs, f, indent=2)
 
-print(f"🎉 Done! Saved {total_fetched} medications to medications_raw.json")
+print(f"Done. Saved {total_fetched} medications to medications_raw.json")

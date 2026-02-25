@@ -20,6 +20,12 @@
     "version": "changeset version",
     "release": "changeset publish",
     "precheck": "pnpm lint && pnpm typecheck && pnpm build && pnpm test"
+    ,
+    "emulators": "firebase emulators:start --only functions,firestore,hosting",
+    "dev:web": "pnpm --filter web dev",
+    "dev:trpc": "pnpm --filter @repo/functions trpc:dev",
+    "dev:full": "pnpm emulators",
+    "dev:all": "pnpm dev:trpc && pnpm dev:web"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",

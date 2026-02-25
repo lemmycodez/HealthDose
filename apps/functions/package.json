@@ -13,7 +13,8 @@
     "dev": "tsc --watch",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "trpc:dev": "node --loader ts-node/esm src/trpc/server.ts"
   },
   "dependencies": {
     "@google-cloud/vertexai": "^1.10.0",

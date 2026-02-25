@@ -2,6 +2,10 @@
 # DEPENDENCIES
 # =============================================================================
 node_modules
+.DS_Store
+.env.local
+data-scripts/medications_raw.json
+medications_raw.json
 
 # =============================================================================
 # BUILD OUTPUTS

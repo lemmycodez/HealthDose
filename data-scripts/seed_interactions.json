@@ -1,0 +1,18 @@
+[
+  {
+    "drugA": "Ibuprofen",
+    "drugB": "Warfarin",
+    "severity": "severe",
+    "interactionType": "bleeding",
+    "description": "NSAIDs may increase bleeding risk when combined with warfarin.",
+    "clinicalManagementAdvice": "Avoid concurrent use if possible. Monitor INR and bleeding signs closely."
+  },
+  {
+    "drugA": "Warfarin",
+    "drugB": "Amoxicillin",
+    "severity": "moderate",
+    "interactionType": "anticoagulation",
+    "description": "Amoxicillin may increase warfarin effect and INR.",
+    "clinicalManagementAdvice": "Monitor INR and adjust warfarin dose if needed."
+  }
+]

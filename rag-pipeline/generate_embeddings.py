@@ -9,11 +9,13 @@ import os
 import time
 import subprocess
 import sys
+from pathlib import Path
 from typing import List, Dict, Any
 
 # Configuration
-INPUT_FILE = "./processed_chunks/all_chunks.json"
-OUTPUT_FILE = "./processed_chunks/all_chunks_with_embeddings.json"
+BASE_DIR = Path(__file__).resolve().parent
+INPUT_FILE = BASE_DIR / "processed_chunks" / "all_chunks.json"
+OUTPUT_FILE = BASE_DIR / "processed_chunks" / "all_chunks_with_embeddings.json"
 BATCH_SIZE = 5  # Process 5 chunks at a time
 PROJECT_ID = "med-assist-9edf0"
 LOCATION = "us-central1"
@@ -159,7 +161,7 @@ def process_embeddings():
     print("=" * 70)
     
     # Check if input file exists
-    if not os.path.exists(INPUT_FILE):
+    if not os.path.exists(str(INPUT_FILE)):
         print(f"❌ Input file not found: {INPUT_FILE}")
         print("   Run process_documents.py first")
         return
@@ -179,7 +181,7 @@ def process_embeddings():
     
     # Load chunks
     print(f"\n📂 Loading chunks from {INPUT_FILE}")
-    with open(INPUT_FILE, 'r', encoding='utf-8') as f:
+    with open(str(INPUT_FILE), 'r', encoding='utf-8') as f:
         chunks = json.load(f)
     print(f"✅ Loaded {len(chunks)} chunks")
     
@@ -225,7 +227,7 @@ def process_embeddings():
     
     # Save results
     print(f"\n💾 Saving to {OUTPUT_FILE}")
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+    with open(str(OUTPUT_FILE), 'w', encoding='utf-8') as f:
         json.dump(chunks_with_embeddings, f, indent=2, ensure_ascii=False)
     
     # Summary

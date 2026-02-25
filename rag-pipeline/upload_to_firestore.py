@@ -5,6 +5,7 @@ RAG Pipeline - Step 5: Upload chunks with embeddings to Firestore
 
 import json
 import os
+from pathlib import Path
 from typing import Dict, Any, List
 
 try:
@@ -16,7 +17,8 @@ except ImportError:
     print("⚠️ Firebase Admin not installed. Run: pip install firebase-admin")
 
 # Configuration
-INPUT_FILE = "./processed_chunks/all_chunks_with_embeddings.json"
+BASE_DIR = Path(__file__).resolve().parent
+INPUT_FILE = BASE_DIR / "processed_chunks" / "all_chunks_with_embeddings.json"
 COLLECTION_NAME = "medical_knowledge"
 
 def init_firestore():
@@ -51,6 +53,8 @@ def prepare_for_firestore(chunk: Dict[str, Any]) -> Dict[str, Any]:
         "chunk_id": chunk["chunk_id"],
         "doc_id": chunk["doc_id"],
         "filename": chunk["filename"],
+        "source_folder": chunk.get("source_folder"),
+        "file_type": chunk.get("file_type"),
         "title": chunk["title"],
         "drug_name": chunk["drug_name"],
         "chunk_index": chunk["chunk_index"],
@@ -139,14 +143,14 @@ def main():
     print("=" * 70)
     
     # Check if input file exists
-    if not os.path.exists(INPUT_FILE):
+    if not os.path.exists(str(INPUT_FILE)):
         print(f"❌ Input file not found: {INPUT_FILE}")
         print("   Run generate_embeddings.py first")
         return
     
     # Load chunks with embeddings
     print(f"\n📂 Loading chunks from {INPUT_FILE}")
-    with open(INPUT_FILE, 'r', encoding='utf-8') as f:
+    with open(str(INPUT_FILE), 'r', encoding='utf-8') as f:
         chunks = json.load(f)
     print(f"✅ Loaded {len(chunks)} chunks")
     

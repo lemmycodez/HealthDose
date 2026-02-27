@@ -1085,12 +1085,12 @@ export function Dashboard() {
       content: messageContent,
       timestamp: Date.now(),
     }
-    let updated: ChatMessage[] = []
+    const existingMessages = sessions.find(sess => sess.id === sid)?.messages ?? []
+    const updated: ChatMessage[] = [...existingMessages, userMsg]
 
     setSessions(prev =>
       prev.map(s => {
         if (s.id !== sid) return s
-        updated = [...s.messages, userMsg]
         return { ...s, messages: updated, updatedAt: Date.now() }
       })
     )

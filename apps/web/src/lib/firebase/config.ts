@@ -3,7 +3,7 @@ import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyB9PJN3xrELTruughZ29tEn4menK0b8xHA',
+  apiKey: 'AIzaSyD53GZhEDVa0yXR2rKeXSVHhORdCcAnT78',
   authDomain: 'med-assist-9edf0.firebaseapp.com',
   projectId: 'med-assist-9edf0',
   storageBucket: 'med-assist-9edf0.firebasestorage.app',

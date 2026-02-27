@@ -1,6 +1,6 @@
-import { router } from './trpc'
-import { userRouter } from './routers/user'
-import { medicationRouter } from './routers/medication'
+import { router } from './trpc.js'
+import { userRouter } from './routers/user.js'
+import { medicationRouter } from './routers/medication.js'
 
 export const appRouter = router({
   user: userRouter,

@@ -1,5 +1,5 @@
 import { createHTTPServer } from '@trpc/server/adapters/standalone'
-import { appRouter } from './router'
+import { appRouter } from './router.js'
 
 const PORT = Number(process.env.PORT || 8787)
 

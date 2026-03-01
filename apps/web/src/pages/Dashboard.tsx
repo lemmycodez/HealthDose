@@ -2,7 +2,15 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import { useTheme } from '../ThemeContext'
-import { sendToAI, type AIMessage } from '../services/chatService'
+import {
+  sendToAI,
+  checkDrugInteractionAPI,
+  type AIMessage,
+  type RagSource,
+  type InteractionResult,
+  type ZambianLanguage,
+  ZAMBIAN_LANGUAGES,
+} from '../services/chatService'
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -11,6 +19,9 @@ interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   timestamp: number
+  sources?: RagSource[]
+  answerSource?: 'rag' | 'openFDA' | 'gemini' | 'error'
+  feedback?: 'up' | 'down'
 }
 
 interface ChatSession {
@@ -516,7 +527,27 @@ interface MsgBubbleProps {
   onEditSave: () => void
   onEditCancel: () => void
   onDelete: () => void
+  onFeedback: (f: 'up' | 'down') => void
   isSending: boolean
+}
+
+const SOURCE_BADGE: Record<string, { label: string; icon: string; color: string }> = {
+  rag: {
+    label: 'Knowledge Base',
+    icon: '📚',
+    color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  },
+  openFDA: {
+    label: 'FDA Database',
+    icon: '🏥',
+    color: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  },
+  gemini: {
+    label: 'AI Knowledge',
+    icon: '🤖',
+    color: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+  },
+  error: { label: 'Error', icon: '⚠️', color: 'bg-red-500/10 text-red-400 border-red-500/30' },
 }
 
 function MsgBubble({
@@ -529,10 +560,12 @@ function MsgBubble({
   onEditSave,
   onEditCancel,
   onDelete,
+  onFeedback,
   isSending,
 }: MsgBubbleProps) {
   const [hovered, setHovered] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [expandedSource, setExpandedSource] = useState<number | null>(null)
   const editRef = useRef<HTMLTextAreaElement>(null)
   const isUser = msg.role === 'user'
 
@@ -623,6 +656,61 @@ function MsgBubble({
               {msg.content}
             </div>
 
+            {/* Answer source badge + citation buttons (assistant only) */}
+            {!isUser && (msg.answerSource || (msg.sources && msg.sources.length > 0)) && (
+              <div className="flex flex-col gap-1.5 px-1 max-w-full">
+                {/* Source badge */}
+                {msg.answerSource && SOURCE_BADGE[msg.answerSource] && (
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border ${SOURCE_BADGE[msg.answerSource].color}`}
+                    >
+                      <span>{SOURCE_BADGE[msg.answerSource].icon}</span>
+                      <span>{SOURCE_BADGE[msg.answerSource].label}</span>
+                    </span>
+                  </div>
+                )}
+                {/* Citation buttons */}
+                {msg.sources && msg.sources.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {msg.sources.map((src, i) => (
+                      <div key={i} className="relative">
+                        <button
+                          onClick={() => setExpandedSource(expandedSource === i ? null : i)}
+                          className="inline-flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 hover:border-emerald-500/60 hover:text-emerald-300 hover:bg-zinc-700 transition-all"
+                        >
+                          <span>📄</span>
+                          <span className="max-w-[120px] truncate">
+                            {src.drugName || src.title}
+                          </span>
+                          <span className="text-zinc-500">{Math.round(src.relevance * 100)}%</span>
+                        </button>
+                        {expandedSource === i && (
+                          <div className="absolute bottom-full left-0 mb-1.5 z-20 w-72 bg-zinc-900 border border-zinc-700 rounded-xl p-3 shadow-xl shadow-black/60">
+                            <p className="text-[11px] font-semibold text-emerald-400 mb-1 truncate">
+                              {src.title}
+                            </p>
+                            {src.drugName && (
+                              <p className="text-[10px] text-zinc-500 mb-2">Drug: {src.drugName}</p>
+                            )}
+                            <p className="text-[11px] text-zinc-300 leading-relaxed">
+                              {src.excerpt}
+                            </p>
+                            <button
+                              onClick={() => setExpandedSource(null)}
+                              className="mt-2 text-[10px] text-zinc-600 hover:text-zinc-400"
+                            >
+                              Close
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Timestamp + action row */}
             <div
               className={`flex items-center gap-1.5 px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
@@ -658,6 +746,44 @@ function MsgBubble({
                       className={`p-1 rounded-md transition-colors ${copied ? 'text-emerald-400' : 'text-zinc-500 hover:text-emerald-400 hover:bg-zinc-800'}`}
                     >
                       {copied ? <Icons.Check /> : <Icons.Copy />}
+                    </button>
+                    {/* Thumbs up */}
+                    <button
+                      onClick={() => onFeedback('up')}
+                      title="Helpful"
+                      className={`p-1 rounded-md transition-colors ${msg.feedback === 'up' ? 'text-emerald-400' : 'text-zinc-500 hover:text-emerald-400 hover:bg-zinc-800'}`}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-4 h-4"
+                      >
+                        <path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" />
+                        <path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" />
+                      </svg>
+                    </button>
+                    {/* Thumbs down */}
+                    <button
+                      onClick={() => onFeedback('down')}
+                      title="Not helpful"
+                      className={`p-1 rounded-md transition-colors ${msg.feedback === 'down' ? 'text-red-400' : 'text-zinc-500 hover:text-red-400 hover:bg-zinc-800'}`}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-4 h-4"
+                      >
+                        <path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z" />
+                        <path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17" />
+                      </svg>
                     </button>
                     <button
                       onClick={onDelete}
@@ -826,6 +952,24 @@ export function Dashboard() {
   /* Session renaming */
   const [renameId, setRenameId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
+
+  /* Language */
+  const [language, setLanguage] = useState<ZambianLanguage>(() => {
+    return (localStorage.getItem('hd_language') as ZambianLanguage) ?? 'English'
+  })
+
+  /* Medical disclaimer */
+  const [disclaimerOpen, setDisclaimerOpen] = useState(() => {
+    return !localStorage.getItem('hd_disclaimer_shown')
+  })
+
+  /* Drug interaction checker */
+  const [interactionOpen, setInteractionOpen] = useState(false)
+  const [interactionDrugA, setInteractionDrugA] = useState('')
+  const [interactionDrugB, setInteractionDrugB] = useState('')
+  const [interactionResult, setInteractionResult] = useState<InteractionResult | null>(null)
+  const [interactionLoading, setInteractionLoading] = useState(false)
+  const [interactionError, setInteractionError] = useState<string | null>(null)
 
   /* Voice recording */
   const [isRecording, setIsRecording] = useState(false)
@@ -1006,11 +1150,13 @@ export function Dashboard() {
       setLoading(true)
       try {
         const aiMsgs: AIMessage[] = history.map(m => ({ role: m.role, content: m.content }))
-        const text = await sendToAI(aiMsgs, apiKey)
+        const { text, sources, answerSource } = await sendToAI(aiMsgs, apiKey, language)
         const bot: ChatMessage = {
           id: genId(),
           role: 'assistant',
           content: text,
+          sources,
+          answerSource,
           timestamp: Date.now(),
         }
         setSessions(prev =>
@@ -1047,8 +1193,41 @@ export function Dashboard() {
         setLoading(false)
       }
     },
-    [apiKey]
+    [apiKey, language]
   )
+
+  /* ── Message feedback ───────────────────────────────────────────────── */
+  const setFeedback = useCallback(
+    (msgId: string, feedback: 'up' | 'down') => {
+      if (!activeId) return
+      setSessions(prev =>
+        prev.map(s => {
+          if (s.id !== activeId) return s
+          return {
+            ...s,
+            messages: s.messages.map(m => (m.id === msgId ? { ...m, feedback } : m)),
+          }
+        })
+      )
+    },
+    [activeId]
+  )
+
+  /* ── Drug interaction check ─────────────────────────────────────────── */
+  const runInteractionCheck = useCallback(async () => {
+    if (!interactionDrugA.trim() || !interactionDrugB.trim()) return
+    setInteractionLoading(true)
+    setInteractionError(null)
+    setInteractionResult(null)
+    try {
+      const result = await checkDrugInteractionAPI(interactionDrugA.trim(), interactionDrugB.trim())
+      setInteractionResult(result)
+    } catch (err) {
+      setInteractionError(err instanceof Error ? err.message : 'Check failed. Please try again.')
+    } finally {
+      setInteractionLoading(false)
+    }
+  }, [interactionDrugA, interactionDrugB])
 
   /* ── Send new message ───────────────────────────────────────────────── */
   const sendMessage = useCallback(async () => {
@@ -1469,12 +1648,42 @@ export function Dashboard() {
             </div>
           </div>
 
+          {/* Drug Interaction Checker button */}
+          <button
+            onClick={() => {
+              setInteractionOpen(true)
+              setInteractionResult(null)
+              setInteractionError(null)
+              setInteractionDrugA('')
+              setInteractionDrugB('')
+            }}
+            title="Drug Interaction Checker"
+            className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
+              theme === 'dark'
+                ? 'text-emerald-400 border-emerald-600/30 bg-emerald-600/10 hover:bg-emerald-600/20'
+                : 'text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
+            }`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4"
+            >
+              <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
+            </svg>
+            <span className="hidden sm:inline">Drug Interactions</span>
+          </button>
+
           {/* Clear current chat */}
           {activeSession && activeSession.messages.length > 0 && (
             <button
               onClick={() => patchSession(activeSession.id, { messages: [], name: 'New Chat' })}
               title="Clear this conversation"
-              className={`ml-auto p-2 rounded-xl transition-colors text-xs flex items-center gap-1.5 ${
+              className={`p-2 rounded-xl transition-colors text-xs flex items-center gap-1.5 ${
                 theme === 'dark'
                   ? 'text-zinc-600 hover:text-red-400 hover:bg-zinc-900'
                   : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
@@ -1551,6 +1760,7 @@ export function Dashboard() {
               onEditSave={saveEdit}
               onEditCancel={cancelEdit}
               onDelete={() => deleteMessage(msg.id)}
+              onFeedback={f => setFeedback(msg.id, f)}
               isSending={loading}
             />
           ))}
@@ -1804,6 +2014,44 @@ export function Dashboard() {
                 </div>
               </div>
 
+              {/* Language */}
+              <div
+                className={`pt-4 border-t ${theme === 'dark' ? 'border-zinc-800' : 'border-gray-200'}`}
+              >
+                <label
+                  className={`block text-sm font-medium mb-3 ${theme === 'dark' ? 'text-zinc-300' : 'text-gray-700'}`}
+                >
+                  Response Language
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {ZAMBIAN_LANGUAGES.map(lang => (
+                    <button
+                      key={lang}
+                      onClick={() => {
+                        setLanguage(lang)
+                        localStorage.setItem('hd_language', lang)
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
+                        language === lang
+                          ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+                          : theme === 'dark'
+                            ? 'border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
+                            : 'border-gray-300 text-gray-600 hover:border-emerald-400 hover:text-emerald-700'
+                      }`}
+                    >
+                      {lang === 'English' ? '🌐' : '🇿🇲'} {lang}
+                    </button>
+                  ))}
+                </div>
+                {language !== 'English' && (
+                  <p
+                    className={`text-xs mt-2 ${theme === 'dark' ? 'text-zinc-600' : 'text-gray-400'}`}
+                  >
+                    AI will respond in {language}. Quality may vary for local languages.
+                  </p>
+                )}
+              </div>
+
               {/* Account Info */}
               <div
                 className={`pt-4 border-t ${theme === 'dark' ? 'border-zinc-800' : 'border-gray-200'}`}
@@ -1847,6 +2095,289 @@ export function Dashboard() {
                 className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-all"
               >
                 Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════════════ DRUG INTERACTION MODAL ══════════════════════ */}
+      {interactionOpen && (
+        <div
+          className={`fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${theme === 'dark' ? 'bg-black/60' : 'bg-gray-900/40'}`}
+          onClick={() => setInteractionOpen(false)}
+        >
+          <div
+            className={`border rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden ${
+              theme === 'dark' ? 'bg-[#0f0f0f] border-zinc-800' : 'bg-white border-gray-200'
+            }`}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div
+              className={`flex items-center justify-between px-6 py-4 border-b ${theme === 'dark' ? 'border-zinc-800' : 'border-gray-200'}`}
+            >
+              <div>
+                <h2
+                  className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
+                >
+                  Drug Interaction Checker
+                </h2>
+                <p
+                  className={`text-xs mt-0.5 ${theme === 'dark' ? 'text-zinc-500' : 'text-gray-500'}`}
+                >
+                  Check for known interactions between two medications
+                </p>
+              </div>
+              <button
+                onClick={() => setInteractionOpen(false)}
+                className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'text-zinc-500 hover:text-white hover:bg-zinc-800' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}
+              >
+                <Icons.X />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    className={`block text-xs font-medium mb-1.5 ${theme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}
+                  >
+                    Drug A
+                  </label>
+                  <input
+                    type="text"
+                    value={interactionDrugA}
+                    onChange={e => setInteractionDrugA(e.target.value)}
+                    placeholder="e.g. Warfarin"
+                    onKeyDown={e => e.key === 'Enter' && runInteractionCheck()}
+                    className={`w-full px-3 py-2 text-sm rounded-xl border focus:outline-none focus:ring-1 focus:ring-emerald-500 ${
+                      theme === 'dark'
+                        ? 'bg-zinc-900 border-zinc-700 text-white placeholder-zinc-600'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label
+                    className={`block text-xs font-medium mb-1.5 ${theme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}
+                  >
+                    Drug B
+                  </label>
+                  <input
+                    type="text"
+                    value={interactionDrugB}
+                    onChange={e => setInteractionDrugB(e.target.value)}
+                    placeholder="e.g. Ibuprofen"
+                    onKeyDown={e => e.key === 'Enter' && runInteractionCheck()}
+                    className={`w-full px-3 py-2 text-sm rounded-xl border focus:outline-none focus:ring-1 focus:ring-emerald-500 ${
+                      theme === 'dark'
+                        ? 'bg-zinc-900 border-zinc-700 text-white placeholder-zinc-600'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                    }`}
+                  />
+                </div>
+              </div>
+              <button
+                onClick={runInteractionCheck}
+                disabled={
+                  interactionLoading || !interactionDrugA.trim() || !interactionDrugB.trim()
+                }
+                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                {interactionLoading && (
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                )}
+                {interactionLoading ? 'Checking…' : 'Check Interaction'}
+              </button>
+
+              {/* Error */}
+              {interactionError && (
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm space-y-2">
+                  <p>
+                    {interactionError.toLowerCase().includes('failed to fetch') ||
+                    interactionError.toLowerCase().includes('network')
+                      ? 'The service is starting up — please wait a moment and try again.'
+                      : interactionError}
+                  </p>
+                  <button
+                    onClick={runInteractionCheck}
+                    className="text-xs underline text-amber-300 hover:text-amber-200"
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
+
+              {/* Result */}
+              {interactionResult && (
+                <div
+                  className={`rounded-xl border overflow-hidden ${theme === 'dark' ? 'border-zinc-800' : 'border-gray-200'}`}
+                >
+                  <div
+                    className={`px-4 py-3 ${
+                      !interactionResult.found
+                        ? 'bg-zinc-800/60'
+                        : interactionResult.hasInteraction
+                          ? interactionResult.highestSeverity === 'severe'
+                            ? 'bg-red-500/10'
+                            : interactionResult.highestSeverity === 'moderate'
+                              ? 'bg-amber-500/10'
+                              : 'bg-yellow-500/10'
+                          : 'bg-emerald-500/10'
+                    }`}
+                  >
+                    <p
+                      className={`text-sm font-medium ${
+                        !interactionResult.found
+                          ? 'text-zinc-400'
+                          : interactionResult.hasInteraction
+                            ? interactionResult.highestSeverity === 'severe'
+                              ? 'text-red-400'
+                              : interactionResult.highestSeverity === 'moderate'
+                                ? 'text-amber-400'
+                                : 'text-yellow-400'
+                            : 'text-emerald-400'
+                      }`}
+                    >
+                      {interactionResult.summary ?? interactionResult.message}
+                    </p>
+                    {interactionResult.found && interactionResult.medications?.a && (
+                      <p
+                        className={`text-xs mt-1 ${theme === 'dark' ? 'text-zinc-500' : 'text-gray-500'}`}
+                      >
+                        {interactionResult.medications.a.name} +{' '}
+                        {interactionResult.medications.b?.name}
+                      </p>
+                    )}
+                  </div>
+                  {interactionResult.interactions && interactionResult.interactions.length > 0 && (
+                    <div
+                      className={`divide-y ${theme === 'dark' ? 'divide-zinc-800' : 'divide-gray-100'}`}
+                    >
+                      {interactionResult.interactions.map((ix, i) => (
+                        <div key={i} className="px-4 py-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span
+                              className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                                ix.severity === 'severe'
+                                  ? 'bg-red-500/20 text-red-400'
+                                  : ix.severity === 'moderate'
+                                    ? 'bg-amber-500/20 text-amber-400'
+                                    : 'bg-yellow-500/20 text-yellow-400'
+                              }`}
+                            >
+                              {ix.severity}
+                            </span>
+                            <span
+                              className={`text-xs ${theme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}
+                            >
+                              {ix.type}
+                            </span>
+                          </div>
+                          <p
+                            className={`text-xs leading-relaxed mb-1 ${theme === 'dark' ? 'text-zinc-300' : 'text-gray-700'}`}
+                          >
+                            {ix.description}
+                          </p>
+                          {ix.advice && (
+                            <p
+                              className={`text-xs italic ${theme === 'dark' ? 'text-zinc-500' : 'text-gray-500'}`}
+                            >
+                              {ix.advice}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div
+              className={`px-6 py-3 border-t ${theme === 'dark' ? 'border-zinc-800 bg-zinc-900/40' : 'border-gray-100 bg-gray-50'}`}
+            >
+              <p className={`text-[10px] ${theme === 'dark' ? 'text-zinc-600' : 'text-gray-400'}`}>
+                For informational purposes only. Always consult a qualified healthcare professional
+                before combining medications.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════════════ DISCLAIMER MODAL ═══════════════════════════ */}
+      {disclaimerOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className={`border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden ${
+              theme === 'dark' ? 'bg-[#0f0f0f] border-zinc-800' : 'bg-white border-gray-200'
+            }`}
+          >
+            <div className="flex flex-col items-center px-6 pt-8 pb-4 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center mb-4">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-7 h-7 text-emerald-400"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
+              <h2
+                className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
+              >
+                Medical Information Disclaimer
+              </h2>
+            </div>
+            <div className="px-6 pb-8">
+              <div
+                className={`text-sm leading-relaxed space-y-3 ${theme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}
+              >
+                <p>
+                  <strong className={theme === 'dark' ? 'text-white' : 'text-gray-900'}>
+                    HealthDose AI
+                  </strong>{' '}
+                  provides general pharmacological and drug information for educational purposes
+                  only.
+                </p>
+                <p>
+                  This tool is <strong>not a substitute</strong> for professional medical advice,
+                  diagnosis, or treatment. Always seek guidance from a qualified healthcare
+                  provider.
+                </p>
+                <p>
+                  In case of a medical emergency, contact your local emergency services immediately.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  localStorage.setItem('hd_disclaimer_shown', '1')
+                  setDisclaimerOpen(false)
+                }}
+                className="w-full mt-6 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all"
+              >
+                I Understand — Continue
               </button>
             </div>
           </div>
